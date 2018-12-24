@@ -1,0 +1,11 @@
+extends layout.pug
+
+block head
+	title Edit Todo
+
+block content
+	div(class="todo-content")
+		form(class="todo-form" method="post" action=`/update/${id}`)
+			input(class="formInput" type="text" name="editTodo" value=`${value}` )
+			input(class="add" type="submit" value="Edit Todo" name=`${id}`  disabled="true")
+		
