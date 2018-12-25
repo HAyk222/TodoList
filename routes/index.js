@@ -1,77 +1,44 @@
 const { Router } = require('express');
-
 const routes = Router();
 
-const todoes = [];
-
 routes.get('/', (req, res) => {
-	req.session.data = todoes
-	res.render("home", {allTodoes: todoes})
+	fetch( 'http://localhost:3000/api/todos', { method: "GET" } )
+    .then( response => response.json() )
+    .then( data => res.render("home", {allTodoes: data}) )
+    .catch( error => console.log(error) );
 })
 
 routes.get('/edit/:id', (req, res) => {
-	// console.log(req.params);
-
-	let index=-1
-	for (let i = 0; i < todoes.length; i++) {
-        if (todoes[i].id == req.params.id) {
-            index = i;
-            break;
-        }
-    }
-    const value = todoes[index].todo
-    req.session.data = todoes
-    // console.log(todoes)
-
-	res.render("edit",{id: req.params.id, value: value })
+	fetch( `http://localhost:3000/api/todos/${req.params.id}`, { method: "GET" } )
+    .then( response => response.json() )
+    .then( data => res.render("edit",{todo: data}) )
+    .catch( error => console.log(error) );
 })
 
 routes.post('/', (req, res) => {
-	req.session.count = (req.session.count || 0) + 1
-
-	todoes.push({id: req.session.count, todo: req.body.todo})
-	req.session.data = todoes
-	res.render("home", {allTodoes: todoes})
-
+	fetch(`http://localhost:3000/api/todos`,{
+    	method: "POST",
+    	body: JSON.stringify({ todo: req.body.todo }),
+    	headers: {"Content-Type": "application/json"}
+    })
+    .then(data => res.redirect('/'))
+    .catch(error => console.log(error));
 })
 
 routes.post('/update/:id', (req, res) => {
-	
-	let index = -1;
-	console.log(todoes)
-	// todoes = req.session.data
-    for (let i = 0; i < todoes.length; i++) {
-        if (todoes[i].id == req.params.id) {
-            index = i;
-            break;
-        }
-    }
-    console.log(index)
-    if (index >= 0) {
-    	let obj = todoes[index]
-    	obj.todo = req.body.editTodo
-        todoes.splice(index, 1, obj);
-        
-    }
-
-	res.redirect('/')
-
+	fetch( `http://localhost:3000/api/todos/${req.params.id}`,{
+		method: 'PUT',
+    	body: JSON.stringify({ todo: req.body.editTodo }),
+    	headers: {"Content-Type": "application/json"}
+	} )
+    .then( data => res.redirect('/') )
+    .catch( error => console.log(error) );
 })
 
 routes.get('/delete/:id', (req, res) => {
-    const { id } = req.params;
-    let index = -1;
-    for (let i = 0; i < todoes.length; i++) {
-        if (todoes[i].id == id) {
-            index = i;
-            break;
-        }
-    }
-    if (index >= 0) {
-        todoes.splice(index, 1);
-    }
-    req.session.data = todoes
-    res.redirect('/')
+	fetch( `http://localhost:3000/api/todos/${req.params.id}`,{ method: "DELETE" } )
+    .then( data => res.redirect('/') )
+    .catch( error => console.log(error) )
 });
 
 module.exports = routes;
